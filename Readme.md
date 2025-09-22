@@ -1,17 +1,26 @@
-# Step 6: Feature Importance
+# Step 7: Feature Importances (which variables influence prediction most)
 
-import matplotlib.pyplot as plt
-import numpy as np
+import pandas as pd
 
-# Get feature importances
+# Get feature importances from the trained Random Forest
 importances = rf.feature_importances_
-indices = np.argsort(importances)[::-1]   # sort descending
-features = X_train.columns
 
-# Plot top 15 features
+# Create a DataFrame for better viewing
+feat_imp = pd.DataFrame({
+    "Feature": X_prepared.columns,
+    "Importance": importances
+}).sort_values(by="Importance", ascending=False)
+
+# Show top 10 important features
+print("Top 10 Features influencing cloudburst prediction:")
+display(feat_imp.head(10))
+
+# Plot for visualization
+import matplotlib.pyplot as plt
+
 plt.figure(figsize=(10,6))
-plt.bar(range(15), importances[indices][:15], align="center")
-plt.xticks(range(15), [features[i] for i in indices[:15]], rotation=45, ha="right")
-plt.title("Top 15 Important Features for Cloudburst Prediction")
-plt.ylabel("Importance Score")
+plt.barh(feat_imp["Feature"].head(10), feat_imp["Importance"].head(10))
+plt.gca().invert_yaxis()
+plt.xlabel("Importance Score")
+plt.title("Top 10 Important Features for Cloudburst Prediction")
 plt.show()

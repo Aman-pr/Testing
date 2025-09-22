@@ -1,15 +1,32 @@
-# Step 4: Preprocessing
-from sklearn.impute import SimpleImputer
+# Step 5: Train/Test Split + Train Model
 
-# Keep only numeric features
-X_num = X.select_dtypes(include=[np.number])
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score
 
-# Impute missing values (replace NaN with median)
-imputer = SimpleImputer(strategy="median")
-X_imputed = imputer.fit_transform(X_num)
+# Split into train (80%) and test (20%)
+X_train, X_test, y_train, y_test = train_test_split(
+    X_prepared, y, test_size=0.2, random_state=42, stratify=y
+)
 
-# Convert back to DataFrame with column names
-X_prepared = pd.DataFrame(X_imputed, columns=X_num.columns)
+print("Train size:", X_train.shape, " Test size:", X_test.shape)
 
-print("Final feature shape:", X_prepared.shape)
-X_prepared.head()
+# Train Random Forest
+rf = RandomForestClassifier(
+    n_estimators=200, 
+    class_weight="balanced", 
+    random_state=42
+)
+rf.fit(X_train, y_train)
+
+# Evaluate on test set
+y_pred = rf.predict(X_test)
+y_proba = rf.predict_proba(X_test)[:,1]
+
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred, digits=4))
+
+print("\nConfusion Matrix:")
+print(confusion_matrix(y_test, y_pred))
+
+print("\nROC AUC:", roc_auc_score(y_test, y_proba))

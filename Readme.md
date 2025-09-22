@@ -1,27 +1,15 @@
-# Step 3: Data Cleaning & Target Preparation
+# Step 4: Preprocessing
+from sklearn.impute import SimpleImputer
 
-import numpy as np
+# Keep only numeric features
+X_num = X.select_dtypes(include=[np.number])
 
-# Define a helper function to convert Yes/No to binary
-def to_binary(series):
-    s = series.astype(str).str.strip().str.lower()
-    return s.map(lambda x: 1 if x in ["yes","y","1","true","t"] 
-                 else 0 if x in ["no","n","0","false","f"] 
-                 else np.nan)
+# Impute missing values (replace NaN with median)
+imputer = SimpleImputer(strategy="median")
+X_imputed = imputer.fit_transform(X_num)
 
-# Select target column (label)
-target_col = "CloudBurst Tomorrow"  # <-- change if different
-df["target"] = to_binary(df[target_col])
+# Convert back to DataFrame with column names
+X_prepared = pd.DataFrame(X_imputed, columns=X_num.columns)
 
-# Drop rows where target is missing
-df = df[df["target"].notna()].copy()
-
-print("Target distribution (0 = No, 1 = Yes):")
-print(df["target"].value_counts())
-
-# Drop target column + any ID columns from features
-X = df.drop(columns=[target_col, "target"])
-y = df["target"]
-
-print("\nFeature shape:", X.shape)
-print("Target shape:", y.shape)
+print("Final feature shape:", X_prepared.shape)
+X_prepared.head()
